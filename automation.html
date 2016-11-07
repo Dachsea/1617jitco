@@ -145,24 +145,66 @@
         </div>
         
     </div>
+    
+    <div id="select_page">
+        <form>
+            <input type="file" id="fileBtn">
+        </form>
+    </div>
 
-
+    <script type="text/javascript" src="encoding.js"></script>
     <script type="text/javascript">
-        var ep_nationality = document.getElementById("ep_nationality");
+        var fileBtn = document.querySelector("#fileBtn");
+        var array;
+        var values = [];
+        fileBtn.addEventListener('change', upload, false);
         
-        var excel = new ActiveXObject("Excel.Application");
-        excel.Visible = false;
-        var book = excel.Workbooks.Open("/definition.xlsx")
-        var sheet = book.WorkSheets("Sheet1");
+        function upload(evt) {
+            if (!isFileUpload()) {
+                console.log('お使いのブラウザはファイルAPIがサポートされていません');
+            } else {
+                var data = null;
+                var file = evt.target.files[0];
+                reader = new FileReader();
+                reader.readAsBinaryString(file);
+                reader.onload = function(event) {
+                    var result = event.target.result;
+                    var sjisArray = str2Array(result);
+                    var uniArray = Encoding.convert(sjisArray, 'UNICODE', 'SJIS');
+                    array = Encoding.codeToString(uniArray).replace( /\r\n/g , "," ).split(",");
+                    
+                    console.log(array[0]);
+                    
+                    for (var i=2;i<array.length;i+=3){
+                        values.push(array[i]);
+                    }
+                    console.log(values[0]); //csvデータ(string)
+                    console.log(values[1]);
+                    console.log(values[2]);
+                    console.log(values[3]);
+                    console.log(values[4]);
+                    
+                };
+                reader.onerror = function() {
+                    console.log('ファイルが読み込めませんでした。 ' + file.fileName);
+                };
+            }
+        }
+
+        function isFileUpload() {
+               var isCompatible = false;
+               if (window.File && window.FileReader && window.FileList && window.Blob) {
+               isCompatible = true;
+               }
+               return isCompatible;
+        }
+
+        function str2Array(str) {
+            var array = [],i,il=str.length;
+            for(i=0;i<il;i++) array.push(str.charCodeAt(i));
+            return array;
+        }
         
-        //Excel内を読み込み
-        var tn_name = sheet.Cells(1,3);
-        
-        console.log(tn_name);
-        
-        ep_nationality.innerText = tn_name;
-        book.Close();
-        excel.Quit();
     </script>
 </body>
 </html>
